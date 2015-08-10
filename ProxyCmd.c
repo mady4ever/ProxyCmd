@@ -48,28 +48,29 @@
 
 //Local Forward function variables
 
-char *localForward_keyfile1 = "/home/localForward_username/.ssh/id_rsa.pub";
-char *localForward_keyfile2 = "/home/localForward_username/.ssh/id_rsa";
-char *localForward_username = "yugesh"; 				   /* HA username */
-char *localForward_password = "Ysb@1991";                  /* HA password */
-char *localForward_server_ip = "127.0.0.1";                /* HA ip       */
-char *localForward_local_listenip = "127.0.0.1";           /* HA ip       */
-unsigned int localForward_local_listenport = 12345;        /* HA port     */
-char *localForward_remote_desthost = "192.168.56.102";     /* switch ip   */ 
-unsigned int localForward_remote_destport = 22;            /* switch port */
+char *localForward_keyfile1;
+char *localForward_keyfile2;
+char *localForward_username;                         /* HA username */
+char *localForward_password;                         /* HA password */
+char *localForward_server_ip;                        /* HA ip       */
+char *localForward_local_listenip;                   /* HA ip       */
+unsigned int localForward_local_listenport;          /* HA port     */
+char *localForward_remote_desthost;                  /* switch ip   */ 
+unsigned int localForward_remote_destport;           /* switch port */
 
 
 //Remote Forward function variables
 
-char *remoteForward_keyfile1 = "/home/remoteForward_username/.ssh/id_rsa.pub";
-char *remoteForward_keyfile2 = "/home/remoteForward_username/.ssh/id_rsa";
-char *remoteForward_username = "yugesh";					/* HM username */
-char *remoteForward_password = "Ysb@1991";					/* HM password */
-char *remoteForward_server_ip = "172.16.75.10";				/* HM ip       */
-char *remoteForward_remote_listenhost = "172.16.75.10"; 	/* HM ip       */
-unsigned int remoteForward_remote_wantport = 12344;			/* HM port     */
-char *remoteForward_local_destip = "127.0.0.1";				/* HA ip       */
-unsigned int remoteForward_local_destport = 12345;			/* HA port     */
+char *remoteForward_keyfile1;
+char *remoteForward_keyfile2;
+char *remoteForward_username;				         /* HM username */
+char *remoteForward_password;					     /* HM password */
+char *remoteForward_server_ip;				         /* HM ip       */
+char *remoteForward_remote_listenhost;               /* HM ip       */
+unsigned int remoteForward_remote_wantport;			 /* HM port     */
+char *remoteForward_local_destip;				     /* HA ip       */
+unsigned int remoteForward_local_destport;			 /* HA port     */
+
 int remote_listenport;
 
 
@@ -161,6 +162,56 @@ int main(int argc, char *argv[])
 
  		pthread_t local_thread, remote_thread;
 		int  local_thread_ret, remote_thread_ret;
+        char *HA_ip,*HA_username,*HA_password,*HM_ip,*HM_username,*HM_password,*Switch_ip;
+		unsigned int HA_port,HM_port,Switch_port;
+
+
+		 if (argc > 1)
+      	 	HA_ip = argv[1];
+   		 if (argc > 2)
+        	HA_port = atoi(argv[2]);
+   		 if (argc > 3)
+        	HA_username = argv[3];
+    	 if (argc > 4)
+        	HA_password = argv[4];
+    	 if (argc > 5)
+        	HM_ip = argv[5];
+    	 if (argc > 6)
+            HM_port = atoi(argv[6]);
+         if (argc > 7)
+            HM_username = argv[7];
+ 		 if (argc > 8)
+            HM_password = argv[8];
+		 if (argc > 9)
+            Switch_ip = argv[9];
+         if (argc > 10)
+            Switch_port = atoi(argv[10]);
+
+
+
+		localForward_keyfile1 = "/home/localForward_username/.ssh/id_rsa.pub";
+		localForward_keyfile2 = "/home/localForward_username/.ssh/id_rsa";
+		localForward_username = HA_username; 				  	  /* HA username */
+	    localForward_password = HA_password;                      /* HA password */
+		localForward_server_ip = HA_ip;                           /* HA ip       */
+		localForward_local_listenip =HA_ip;          	          /* HA ip       */
+		localForward_local_listenport = HA_port;        		  /* HA port     */
+		localForward_remote_desthost = Switch_ip;                 /* switch ip   */ 
+		localForward_remote_destport = Switch_port;               /* switch port */
+
+
+		//Remote Forward function variables
+
+		remoteForward_keyfile1 = "/home/remoteForward_username/.ssh/id_rsa.pub";
+		remoteForward_keyfile2 = "/home/remoteForward_username/.ssh/id_rsa";
+		remoteForward_username = HM_username;					    /* HM username */
+		remoteForward_password = HM_password;					    /* HM password */
+		remoteForward_server_ip = HM_ip;				            /* HM ip       */
+		remoteForward_remote_listenhost =HM_ip;	                    /* HM ip       */
+		remoteForward_remote_wantport = HM_port;			        /* HM port     */
+		remoteForward_local_destip = HA_ip;				            /* HA ip       */
+		remoteForward_local_destport = HA_port;			            /* HA port     */
+
 		LOG_PRINT("In Main Function");
 
         remote_thread_ret = pthread_create( &remote_thread, NULL, RemotePortForwarding,NULL); 
@@ -195,7 +246,7 @@ void *LocalPortForwarding()
     ssize_t len, wr;
     char buf[16384];
 
-#ifdef WIN32
+#ifdef WIN32l
     char sockopt;
     SOCKET sock = INVALID_SOCKET;
     SOCKET listensock = INVALID_SOCKET, forwardsock = INVALID_SOCKET;
