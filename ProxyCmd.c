@@ -165,7 +165,6 @@ int main(int argc, char *argv[])
         char *HA_ip,*HA_username,*HA_password,*HM_ip,*HM_username,*HM_password,*Switch_ip;
 		unsigned int HA_port,HM_port,Switch_port;
 
-
 		 if (argc > 1)
       	 	HA_ip = argv[1];
    		 if (argc > 2)
@@ -187,7 +186,7 @@ int main(int argc, char *argv[])
          if (argc > 10)
             Switch_port = atoi(argv[10]);
 
-
+		//Initialization of Local Forward function variables
 
 		localForward_keyfile1 = "/home/localForward_username/.ssh/id_rsa.pub";
 		localForward_keyfile2 = "/home/localForward_username/.ssh/id_rsa";
@@ -200,7 +199,7 @@ int main(int argc, char *argv[])
 		localForward_remote_destport = Switch_port;               /* switch port */
 
 
-		//Remote Forward function variables
+		//Initialization of Remote Forward function variables
 
 		remoteForward_keyfile1 = "/home/remoteForward_username/.ssh/id_rsa.pub";
 		remoteForward_keyfile2 = "/home/remoteForward_username/.ssh/id_rsa";
@@ -246,7 +245,7 @@ void *LocalPortForwarding()
     ssize_t len, wr;
     char buf[16384];
 
-#ifdef WIN32l
+#ifdef WIN32
     char sockopt;
     SOCKET sock = INVALID_SOCKET;
     SOCKET listensock = INVALID_SOCKET, forwardsock = INVALID_SOCKET;
@@ -264,22 +263,6 @@ void *LocalPortForwarding()
     int listensock = -1, forwardsock = -1;
 #endif
 
-/*
-    if (argc > 1)
-        localForward_server_ip = argv[1];
-    if (argc > 2)
-        localForward_username = argv[2];
-    if (argc > 3)
-        localForward_password = argv[3];
-    if (argc > 4)
-        localForward_local_listenip = argv[4];
-    if (argc > 5)
-        localForward_local_listenport = atoi(argv[5]);
-    if (argc > 6)
-        localForward_remote_desthost = argv[6];
-    if (argc > 7)
-        localForward_remote_destport = atoi(argv[7]);
-*/
     rc = libssh2_init (0);
     if (rc != 0) {
         fprintf (stderr, "libssh2 initialization failed (%d)\n", rc);
@@ -287,7 +270,6 @@ void *LocalPortForwarding()
         //return 1;
     }
 
-//while loop for contineously creating the new socs and listen it.
 
     /* Connect to SSH server */
     sock = socket(PF_INET, SOCK_STREAM, IPPROTO_TCP);
@@ -295,25 +277,21 @@ void *LocalPortForwarding()
     if (sock == INVALID_SOCKET) {
         fprintf(stderr, "failed to open socket!\n");
         LOG_PRINT("failed to open socket!");
-        //return -1;
-    }
+     }
 #else
     if (sock == -1) {
         perror("socket");
-        //return -1;
-    }
+     }
 #endif
 
     sin.sin_family = AF_INET;
     if (INADDR_NONE == (sin.sin_addr.s_addr = inet_addr(localForward_server_ip))) {
         perror("inet_addr");
-        //return -1;
     }
     sin.sin_port = htons(22);
     if (connect(sock, (struct sockaddr*)(&sin),sizeof(struct sockaddr_in)) != 0) {
         fprintf(stderr, "failed to connect!\n");
         LOG_PRINT("failed to connect!");
-        //return -1;
     }
 
     /* Create a session instance */
@@ -321,7 +299,6 @@ void *LocalPortForwarding()
     if(!session) {
         fprintf(stderr, "Could not initialize SSH session!\n");
         LOG_PRINT("Could not initialize SSH session!");
-     //   return -1;
     }
 
     /* ... start it up. This will trade welcome banners, exchange keys,
@@ -331,7 +308,6 @@ void *LocalPortForwarding()
     if(rc) {
         fprintf(stderr, "Error when starting up SSH session: %d\n", rc);
         LOG_PRINT("Error when starting up SSH session: %d", rc);
-       // return -1;
     }
 
     /* At this point we havn't yet authenticated.  The first thing to do
@@ -356,15 +332,6 @@ void *LocalPortForwarding()
     if (strstr(userauthlist, "publickey"))
         auth |= AUTH_PUBLICKEY;
 
-    /* check for options */
-	/*
-    if(argc > 8) {
-        if ((auth & AUTH_PASSWORD) && !strcasecmp(argv[8], "-p"))
-            auth = AUTH_PASSWORD;
-        if ((auth & AUTH_PUBLICKEY) && !strcasecmp(argv[8], "-k"))
-            auth = AUTH_PUBLICKEY;
-    }
-	*/
     if (auth & AUTH_PASSWORD) {
         if (libssh2_userauth_password(session, localForward_username, localForward_password)) {
             fprintf(stderr, "Authentication by localForward_password failed.\n");
@@ -391,12 +358,10 @@ void *LocalPortForwarding()
     if (listensock == INVALID_SOCKET) {
         fprintf(stderr, "failed to open listen socket!\n");
 		LOG_PRINT("failed to open listen socket!");
-       // return -1;
     }
 #else
     if (listensock == -1) {
         perror("socket");
-        //return -1;
     }
 #endif
 
@@ -560,33 +525,10 @@ void *RemotePortForwarding()
     if (err != 0) {
         fprintf(stderr, "WSAStartup failed with error: %d\n", err);
 		LOG_PRINT("WSAStartup failed with error: %d", err);
-        //return 1;
     }
 #else
     int sock = -1, forwardsock = -1;
 #endif
-/*
-    if (argc > 1)
-        remoteForward_server_ip = argv[1];
-    if (argc > 2)
-        remoteForward_username = argv[2];
-    if (argc > 3)
-        password = argv[3];
-    if (argc > 4)
-        remoteForward_remote_listenhost = argv[4];
-    if (argc > 5)
-        remoteForward_remote_wantport = atoi(argv[5]);
-    if (argc > 6)
-        remoteForward_local_destip = argv[6];l
-    if (argc > 7)
-        remoteForward_local_destport = atoi(argv[7]);
-
-    rc = libssh2_init (0);
-    if (rc != 0) {
-        fprintf (stderr, "libssh2 initialization failed (%d)\n", rc);
-        return 1;
-    }
-*/
 
     /* Connect to SSH server */
     sock = socket(PF_INET, SOCK_STREAM, IPPROTO_TCP);
@@ -594,26 +536,22 @@ void *RemotePortForwarding()
     if (sock == INVALID_SOCKET) {
         fprintf(stderr, "failed to open socket!\n");
 		LOG_PRINT("failed to open socket!");
-       // return -1;
     }
 #else
     if (sock == -1) {
         perror("socket");
-        //return -1;
     }
 #endif
 
     sin.sin_family = AF_INET;
     if (INADDR_NONE == (sin.sin_addr.s_addr = inet_addr(remoteForward_server_ip))) {
         perror("inet_addr");
-        //return -1;l
     }
     sin.sin_port = htons(22);
     if (connect(sock, (struct sockaddr*)(&sin),
                 sizeof(struct sockaddr_in)) != 0) {
         fprintf(stderr, "failed to connect!\n");
 		LOG_PRINT("failed to connect!");
-     //   return -1;
     }
 
     /* Create a session instance */
@@ -621,7 +559,6 @@ void *RemotePortForwarding()
     if(!session) {
         fprintf(stderr, "Could not initialize SSH session!\n");
 		LOG_PRINT("Could not initialize SSH session!");
-       // return -1;
     }
 
     /* ... start it up. This will trade welcome banners, exchange keys,
@@ -631,7 +568,6 @@ void *RemotePortForwarding()
     if(rc) {
         fprintf(stderr, "Error when starting up SSH session: %d\n", rc);
   		LOG_PRINT("Error when starting up SSH session: %d", rc);
-        //return -1;
     }
 
     /* At this point we havn't yet authenticated.  The first thing to do
@@ -656,16 +592,6 @@ void *RemotePortForwarding()
     if (strstr(userauthlist, "publickey"))
         auth |= AUTH_PUBLICKEY;
 
-
-    /* 
-	//check for options 
-    if(argc > 8) {
-        if ((auth & AUTH_PASSWORD) && !strcasecmp(argv[8], "-p"))
-            auth = AUTH_PASSWORD;
-        if ((auth & AUTH_PUBLICKEY) && !strcasecmp(argv[8], "-k"))
-            auth = AUTH_PUBLICKEY;
-    }
-*/
     if (auth & AUTH_PASSWORD) {
         if (libssh2_userauth_password(session, remoteForward_username, remoteForward_password)) {
             fprintf(stderr, "Authentication by password failed.\n");
